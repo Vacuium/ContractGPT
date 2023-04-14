@@ -1,0 +1,42 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DEP_PATH: ./requirements.txt
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Python Safety Check
+        uses: aufdenpunkt/python-safety-check@v1.0.5
+
+      - name: Deploy to Server
+        uses: AEnterprise/rsync-deploy@v1.0
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          ARGS: -avz --exclude='config.ini'
+          SERVER_PORT: '22'
+          FOLDER: ./
+          SERVER_IP: ${{ secrets.SSH_HOST }}
+          USERNAME: ${{ secrets.SSH_USERNAME }}
+          SERVER_DESTINATION: /home/Web/web_test
+
+      # - name: Restart Chatbot
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     key: ${{ secrets.DEPLOY_KEY }}
+
+      #     script: |
+      #       cd /home/hkbu/chatbot_exp
+      #       echo ${{ secrets.SSH_PASSWD }} | sudo -S docker compose build chatbot
+      #       echo ${{ secrets.SSH_PASSWD }} | sudo -S docker compose up -d --force-recreate --no-deps chatbot
