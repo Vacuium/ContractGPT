@@ -5,13 +5,13 @@ import configparser
 import logging
 import os
 import sys
-from pyngrok import ngrok
+# from pyngrok import ngrok
 
-port = sys.argv[sys.argv.index("--port") + 1] if "--port" in sys.argv else 5000
+# port = sys.argv[sys.argv.index("--port") + 1] if "--port" in sys.argv else 5000
 
-# Open a ngrok tunnel to the dev server
-public_url = ngrok.connect(port).public_url
-print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
+# # Open a ngrok tunnel to the dev server
+# public_url = ngrok.connect(port).public_url
+# print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
 
 
 
@@ -37,5 +37,5 @@ def submit():
     return answer # Return the code back to the frontend to display below the input section
 
 if __name__ == '__main__':
-    app.config["BASE_URL"] = public_url
+    # app.config["BASE_URL"] = public_url
     app.run(debug=True) # Run the Flask app in debug mode
