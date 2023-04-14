@@ -5,6 +5,7 @@ WORKDIR ./app
 COPY config.ini config.ini
 COPY app.py app.py
 COPY requirements.txt requirements.txt
+COPY templates templates
 
 RUN pip install pip update
 RUN pip install -r requirements.txt
