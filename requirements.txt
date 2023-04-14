@@ -1,3 +1,4 @@
 configparser
 revChatGPT
 Flask
+flask-ngrok
