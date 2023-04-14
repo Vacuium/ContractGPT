@@ -27,4 +27,4 @@ def submit():
     return answer # Return the code back to the frontend to display below the input section
 
 if __name__ == '__main__':
-    app.run(debug=True) # Run the Flask app in debug mode
+    app.run(host = '0.0.0.0', port = 5000, debug=True) # Run the Flask app in debug mode
