@@ -1,35 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Code Input Website</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContractGPT</title>
+  <!-- Include CodeMirror stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/monokai.min.css">
+  <!-- Custom styles -->
+
+
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #b5e0f3, #0072ff);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+        color: beige;
+        display: block;
+        font-size: 4.6em;
+        margin-block-start: 0.67em;
+        margin-block-end: 0.67em;
+        margin-inline-start: 0px;
+        margin-inline-end: 0px;
+        font-weight: bold;
+    }
+
+
+    #code-editor-wrapper {
+      background-color: white;
+      border-radius: 20px;
+      width: 150%;
+      max-width: 1200px;
+      padding: 15px;
+    }
+
+    #code-editor {
+      width: 100%;
+      height: 100px;
+    }
+
+    .btn {
+      /* font-family: fantasy; */
+      display: inline-block;
+      background-color: white;
+      color: black;
+      text-decoration: black;
+      border-radius: 12px;
+      padding: 10px 20px;
+      margin: 20px 0;
+      font-size: 18px;
+      box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      transition: all .3s linear;
+    }
+
+    .btn:hover{
+      background-color: rgb(15, 8, 8);
+      color: rgb(248, 246, 246);
+    }
+
+    .CodeMirror{
+      border:1px solid black;font-size:20px;width:1200px;height:500px
+    }
+  </style>
 </head>
 <body>
-    <h1>Code Input</h1>
-    <form id="codeForm">
-        <textarea id="codeInput" rows="10" cols="50"></textarea>
-        <button type="submit">Submit</button>
-    </form>
-    <h2>Output</h2>
-    <pre id="codeOutput"></pre>
-    <script>
-        document.getElementById('codeForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent form submission
-            var code = document.getElementById('codeInput').value; // Get code from input
-            console.log(code)
-            // Send code to backend using fetch API
-            fetch('/submit', {
-                method: 'POST',
-                body: JSON.stringify({code: code}),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.text())
-            .then(output => {
-                document.getElementById('codeOutput').innerText = output; // Update output area
-            })
-            .catch(error => console.error(error));
+  <h1>ContractGPT</h1>
+  <!-- Code editor wrapper -->
+  <div id="code-editor-wrapper">
+    <!-- Textarea for the code editor -->
+    <textarea id="code-editor", class = "CodeMirror"></textarea>
+  </div>
+  <!-- Submit button -->
+  <!-- <a href="#" id="submit-btn", class = "shadow-btn">Submit</a> -->
+  <div id = "submitButton" class = "btn", type = "submit">Submit</div>
+
+  <!-- Include CodeMirror scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/solidity/solidity.min.js"></script>
+
+  <!-- Initialize CodeMirror -->
+  <script>
+    const codeEditor = document.getElementById('code-editor');
+    const editor = CodeMirror.fromTextArea(codeEditor, {
+      mode: 'javascript', // Change this to the desired mode (e.g., 'python', 'solidity')
+      theme: 'monokai',
+      lineNumbers: true,
+      indentUnit: 4,
+      smartIndent: true,
+      tabSize: 4,
+    });
+
+    document.getElementById('submitButton').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+        var code = document.getElementById('codeInput').value; // Get code from input
+        console.log(code)
+        // Send code to backend using fetch API
+        fetch('/newChat', {
+            method: 'POST',
+            body: JSON.stringify({code: code}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
-    </script>
+    });
+  </script>
 </body>
 </html>

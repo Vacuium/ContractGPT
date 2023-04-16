@@ -1,4 +1,8 @@
-from flask import Flask, request, render_template
+from cgitb import text
+import mysql
+from flask import Flask, request, render_template,session,redirect,url_for,flash
+from flask_mysqldb import MySQL
+import mysql.connector
 from revChatGPT.V3 import Chatbot
 
 import configparser
@@ -13,29 +17,102 @@ import sys
 # public_url = ngrok.connect(port).public_url
 # print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
 
+global chat_dict
+chat_dict = {}
+global config
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-
-def ask_contract(contract):
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    chatbot = Chatbot(api_key=config['CHATGPT']['API_KEY'])
-
-    prompt = 'Pretend that you are the smart contract itself below. And you have to answer question about yourself i.e., the smart contract.\n'
-    answer = chatbot.ask(prompt = prompt + contract)
-    return answer
+class Config(object):
+    SECRET_KEY = "DJFAJLAJAFKLJQ"
 
 app = Flask(__name__)
 
 @app.route('/')
-def index():
-    return render_template('index.html') # Render the HTML template
+def go():
+    return render_template('login.html')
 
-@app.route('/submit', methods=['POST'])
-def submit():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="zhang2021238A",
+            database="comp7300"
+        )
+
+        # Check if email and password match in the database
+        cursor = conn.cursor()
+        sql = "SELECT * FROM user WHERE email = %s AND password = %s"
+        values = (email, password)
+        cursor.execute(sql, values)
+        user = cursor.fetchone()
+
+        if user:
+            # If email and password are correct, set user session and redirect to index page
+            # Add your session handling code here
+            session['email'] = email
+            return redirect(url_for("index"))
+        else:
+            # If email and password are incorrect, show error message
+            error = 'Invalid email or password. Please try again.'
+            return render_template('login.html', error=error)
+
+@app.route('/register',methods=['get','post'])
+def register():
+    # Get form data from request object
+    email = request.form.get('email')
+    password = request.form.get('password')
+    # Connect to MySQL database
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="zhang2021238A",
+        database="comp7300"
+    )
+    cursor = conn.cursor()
+
+    # Insert form data into database
+    cursor.execute("INSERT INTO user (email, password) VALUES (%s, %s)", (email, password))
+    conn.commit()
+
+    # Close database connection
+    cursor.close()
+    conn.close()
+    return render_template('register.html')
+
+@app.route('/newChat', methods=['POST'])
+def newChat():
+    global config
+    global chat_dict
     code = request.get_json()['code'] # Get the code from the form submission
-    answer = ask_contract(code) # Print the code in the terminal
-    return answer # Return the code back to the frontend to display below the input section
+
+    prompt = 'You are the smart contract itself below. And you have to answer question about yourself i.e., the smart contract.\n'
+    prompt += code
+    chatbot = Chatbot(api_key=config['CHATGPT']['API_KEY'], system_prompt = prompt)
+    username = session.get('email')
+    chat_dict[username] = chatbot
+
+    return render_template('streamChat.html')
+
+@app.route('/submit', methods = ['POST'])
+def submit():
+    global chat_dict
+    username = session.get('email')
+    chatbot = chat_dict[username]
+
+    text = request.get_json()['text']
+    answer = chatbot.ask(prompt = text)
+    return answer
+
+@app.route('/index')
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     # app.config["BASE_URL"] = public_url
+    app.config.from_object(Config())
     app.run(debug=True) # Run the Flask app in debug mode

@@ -134,10 +134,10 @@
                 //         userInput.focus(); // Focus the input again, so user can type a new response
                 //     }
                 // }, 100);
-                var code = userString
+                var text = userString
                 fetch('/submit', {
                     method: 'POST',
-                    body: JSON.stringify({code: code}),
+                    body: JSON.stringify({text: text}),
                     headers: {
                         'Content-Type': 'application/json'
                     }
