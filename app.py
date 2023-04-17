@@ -1,4 +1,3 @@
-from cgitb import text
 import mysql
 from flask import Flask, request, render_template,session,redirect,url_for,flash
 from flask_mysqldb import MySQL
@@ -19,6 +18,7 @@ import sys
 
 global chat_dict
 chat_dict = {}
+
 global config
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -84,19 +84,30 @@ def register():
     conn.close()
     return render_template('register.html')
 
-@app.route('/newChat', methods=['POST'])
+@app.route('/newChat', methods=['POST','GET'])
 def newChat():
     global config
     global chat_dict
     code = request.get_json()['code'] # Get the code from the form submission
 
     prompt = 'You are the smart contract itself below. And you have to answer question about yourself i.e., the smart contract.\n'
-    prompt += code
-    chatbot = Chatbot(api_key=config['CHATGPT']['API_KEY'], system_prompt = prompt)
+    prompt += code if code else ''
+    chatbot = Chatbot(api_key=config['CHATGPT']['API_KEY'])
+    response = chatbot.ask(prompt = prompt)
     username = session.get('email')
-    chat_dict[username] = chatbot
+    chat_dict[username]['chatbot'] = chatbot
+    chat_dict[username]['og_response'] = response
+    logging.info(f'{username}: {prompt}')
+    logging.info(f'chat_dict: {chat_dict}')
+    # return redirect(url_for("final"))
+    # return render_template('streamChat.html')
 
-    return render_template('streamChat.html')
+# @app.route('/ogResponse', methods = ['Get'])
+# def ogResponse():
+#     global chat_dict
+#     username = session.get('email')
+#     response = chat_dict[username]['og_response']
+#     return response
 
 @app.route('/submit', methods = ['POST'])
 def submit():
@@ -111,6 +122,13 @@ def submit():
 @app.route('/index')
 def index():
     return render_template('index.html')
+
+@app.route('/final')
+def final():
+    global chat_dict
+    username = session.get('email')
+    response = chat_dict[username]['og_response']
+    return render_template('streamChat.html', og_response = response)
 
 if __name__ == '__main__':
     # app.config["BASE_URL"] = public_url

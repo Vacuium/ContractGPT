@@ -61,6 +61,7 @@
       box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
       cursor: pointer;
       transition: all .3s linear;
+      text-align: center;
     }
 
     .btn:hover{
@@ -76,13 +77,15 @@
 <body>
   <h1>ContractGPT</h1>
   <!-- Code editor wrapper -->
-  <div id="code-editor-wrapper">
-    <!-- Textarea for the code editor -->
-    <textarea id="code-editor", class = "CodeMirror"></textarea>
-  </div>
-  <!-- Submit button -->
-  <!-- <a href="#" id="submit-btn", class = "shadow-btn">Submit</a> -->
-  <div id = "submitButton" class = "btn", type = "submit">Submit</div>
+  <form action="/newChat" method="post">
+      <div id="code-editor-wrapper">
+        <!-- Textarea for the code editor -->
+        <textarea id="code-editor", class = "CodeMirror", name="code"></textarea>
+      </div>
+      <!-- Submit button -->
+      <!-- <a href="#" id="submit-btn", class = "shadow-btn">Submit</a> -->
+      <div id = "submitButton" class = "btn", type = "button">Submit</div>
+  </form>
 
   <!-- Include CodeMirror scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
@@ -94,7 +97,7 @@
   <script>
     const codeEditor = document.getElementById('code-editor');
     const editor = CodeMirror.fromTextArea(codeEditor, {
-      mode: 'javascript', // Change this to the desired mode (e.g., 'python', 'solidity')
+      mode: 'solidity', // Change this to the desired mode (e.g., 'python', 'solidity')
       theme: 'monokai',
       lineNumbers: true,
       indentUnit: 4,
@@ -102,9 +105,9 @@
       tabSize: 4,
     });
 
-    document.getElementById('submitButton').addEventListener('submit', function(event) {
+    document.getElementById('submitButton').addEventListener('click', function(event) {
         event.preventDefault(); // Prevent form submission
-        var code = document.getElementById('codeInput').value; // Get code from input
+        var code = document.getElementById('code-editor').value; // Get code from CodeMirror editor
         console.log(code)
         // Send code to backend using fetch API
         fetch('/newChat', {
@@ -113,7 +116,17 @@
             headers: {
                 'Content-Type': 'application/json'
             }
-        });
+        })
+            .then(response => {
+                // Handle response from server
+                console.log(response);
+                // Do something with the response
+                window.location.href = "{{ url_for('final') }}";
+            })
+            .catch(error => {
+                // Handle error
+                console.error(error);
+            });
     });
   </script>
 </body>
